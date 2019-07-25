@@ -51,8 +51,9 @@ class CUBLabelDataset(CUBDatasetBase):
 
         image_class_labels_file = os.path.join(
             self.data_dir, 'image_class_labels.txt')
-        labels = [int(d_label.split()[1]) - 1 for
-                  d_label in open(image_class_labels_file)]
+        labels = [int(class_id) - 1
+                  for image_id, class_id
+                  in self._read_tokens(image_class_labels_file)]
         self._labels = np.array(labels, dtype=np.int32)
 
         self.add_getter('img', self._get_image)

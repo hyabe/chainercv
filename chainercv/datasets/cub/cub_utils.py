@@ -68,12 +68,15 @@ class CUBDatasetBase(GetterDataset):
         bbs_file = os.path.join(data_dir, 'bounding_boxes.txt')
 
         self.paths = [
-            line.strip().split()[1] for line in open(imgs_file)]
+            image_name
+            for image_id, image_name
+            in self._read_tokens(imgs_file)]
 
         # (x_min, y_min, width, height)
         bbs = np.array([
-            tuple(map(float, line.split()[1:5]))
-            for line in open(bbs_file)])
+            tuple(map(float, (x, y, width, height)))
+            for image_id, x, y, width, height
+            in self._read_tokens(bbs_file)])
         # (x_min, y_min, width, height) -> (x_min, y_min, x_max, y_max)
         bbs[:, 2:] += bbs[:, :2]
         # (x_min, y_min, width, height) -> (y_min, x_min, y_max, x_max)
@@ -86,6 +89,9 @@ class CUBDatasetBase(GetterDataset):
 
         self.add_getter('bbox', self._get_bbox)
         self.add_getter('prob_map', self._get_prob_map)
+
+    def _read_tokens(self, filename):
+        return [line.strip().split() for line in open(filename)]
 
     def __len__(self):
         return len(self.paths)

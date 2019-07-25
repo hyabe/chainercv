@@ -56,16 +56,15 @@ class CUBKeypointDataset(CUBDatasetBase):
         parts_loc_file = os.path.join(self.data_dir, 'parts', 'part_locs.txt')
         self._point_dict = collections.defaultdict(list)
         self._visible_dict = collections.defaultdict(list)
-        for loc in open(parts_loc_file):
-            values = loc.split()
-            id_ = int(values[0]) - 1
+        for image_id, part_id, x, y, visible in self._read_tokens(parts_loc_file):
+            idx = int(image_id) - 1
 
             # (y, x) order
-            point = [float(v) for v in values[3:1:-1]]
-            mask = bool(int(values[4]))
+            point = [float(y), float(x)]
+            mask = visible == '1'
 
-            self._point_dict[id_].append(point)
-            self._visible_dict[id_].append(mask)
+            self._point_dict[idx].append(point)
+            self._visible_dict[idx].append(mask)
 
         self.add_getter(('img', 'point', 'visible'),
                         self._get_img_and_annotations)
