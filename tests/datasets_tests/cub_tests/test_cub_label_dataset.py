@@ -12,6 +12,7 @@ from chainercv.utils import assert_is_label_dataset
 
 
 @testing.parameterize(*testing.product({
+    'split': ['train', 'test', 'traintest'],
     'return_bbox': [True, False],
     'return_prob_map': [True, False]
 }))
@@ -19,6 +20,7 @@ class TestCUBLabelDataset(unittest.TestCase):
 
     def setUp(self):
         self.dataset = CUBLabelDataset(
+            split=self.split,
             return_bbox=self.return_bbox, return_prob_map=self.return_prob_map)
 
     @attr.slow

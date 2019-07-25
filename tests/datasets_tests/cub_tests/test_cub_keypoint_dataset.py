@@ -11,13 +11,15 @@ from chainercv.utils import assert_is_point_dataset
 
 
 @testing.parameterize(*testing.product({
+    'split': ['train', 'test', 'traintest'],
     'return_bbox': [True, False],
     'return_prob_map': [True, False]}
 ))
 class TestCUBKeypointDataset(unittest.TestCase):
 
     def setUp(self):
-        self.dataset = CUBKeypointDataset(return_bbox=self.return_bbox,
+        self.dataset = CUBKeypointDataset(split=self.split,
+                                          return_bbox=self.return_bbox,
                                           return_prob_map=self.return_prob_map)
 
     @attr.slow

@@ -16,6 +16,8 @@ class CUBLabelDataset(CUBDatasetBase):
         data_dir (string): Path to the root of the training data. If this is
             :obj:`auto`, this class will automatically download data for you
             under :obj:`$CHAINER_DATASET_ROOT/pfnet/chainercv/cub`.
+        split ({'train', 'test', 'traintest'}): Select a split of the dataset.
+            The default value is :obj:`traintest`.
         return_bbox (bool): If :obj:`True`, this returns a bounding box
             around a bird. The default value is :obj:`False`.
         prob_map_dir (string): Path to the root of the probability maps.
@@ -32,7 +34,7 @@ class CUBLabelDataset(CUBDatasetBase):
 
         :obj:`img`, ":math:`(3, H, W)`", :obj:`float32`, \
         "RGB, :math:`[0, 255]`"
-        :obj:`label`, scalar, :obj:`int32`, ":math:`[0, \#class - 1]`"
+        :obj:`label`, scalar, :obj:`int32`, ":math:`[0, #class - 1]`"
         :obj:`bbox` [#cub_label_1]_, ":math:`(1, 4)`", :obj:`float32`, \
             ":math:`(y_{min}, x_{min}, y_{max}, x_{max})`"
         :obj:`prob_map` [#cub_label_2]_, ":math:`(H, W)`", :obj:`float32`, \
@@ -45,15 +47,16 @@ class CUBLabelDataset(CUBDatasetBase):
         It is available if :obj:`return_prob_map = True`.
     """
 
-    def __init__(self, data_dir='auto', return_bbox=False,
+    def __init__(self, data_dir='auto', split='traintest', return_bbox=False,
                  prob_map_dir='auto', return_prob_map=False):
-        super(CUBLabelDataset, self).__init__(data_dir, prob_map_dir)
+        super(CUBLabelDataset, self).__init__(data_dir, split, prob_map_dir)
 
         image_class_labels_file = os.path.join(
             self.data_dir, 'image_class_labels.txt')
         labels = [int(class_id) - 1
                   for image_id, class_id
-                  in self._read_tokens(image_class_labels_file)]
+                  in self._read_tokens(image_class_labels_file)
+                  if image_id in self.image_ids]
         self._labels = np.array(labels, dtype=np.int32)
 
         self.add_getter('img', self._get_image)

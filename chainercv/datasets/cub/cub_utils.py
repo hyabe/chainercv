@@ -54,7 +54,8 @@ class CUBDatasetBase(GetterDataset):
 
     """
 
-    def __init__(self, data_dir='auto', prob_map_dir='auto'):
+    def __init__(self, data_dir='auto', split='traintest',
+                 prob_map_dir='auto'):
         super(CUBDatasetBase, self).__init__()
 
         if data_dir == 'auto':
@@ -66,17 +67,24 @@ class CUBDatasetBase(GetterDataset):
 
         imgs_file = os.path.join(data_dir, 'images.txt')
         bbs_file = os.path.join(data_dir, 'bounding_boxes.txt')
+        split_file = os.path.join(data_dir, 'train_test_split.txt')
 
+        acceptables = {'train': {'1'}, 'test': {'0'},
+                       'traintest': {'0', '1'}}[split]
+        self.image_ids = {
+            image_id
+            for image_id, is_training_image in self._read_tokens(split_file)
+            if is_training_image in acceptables}
         self.paths = [
             image_name
-            for image_id, image_name
-            in self._read_tokens(imgs_file)]
+            for image_id, image_name in self._read_tokens(imgs_file)
+            if image_id in self.image_ids]
 
         # (x_min, y_min, width, height)
         bbs = np.array([
             tuple(map(float, (x, y, width, height)))
-            for image_id, x, y, width, height
-            in self._read_tokens(bbs_file)])
+            for image_id, x, y, width, height in self._read_tokens(bbs_file)
+            if image_id in self.image_ids])
         # (x_min, y_min, width, height) -> (x_min, y_min, x_max, y_max)
         bbs[:, 2:] += bbs[:, :2]
         # (x_min, y_min, width, height) -> (y_min, x_min, y_max, x_max)

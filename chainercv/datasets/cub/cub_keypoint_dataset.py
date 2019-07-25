@@ -17,6 +17,8 @@ class CUBKeypointDataset(CUBDatasetBase):
         data_dir (string): Path to the root of the training data. If this is
             :obj:`auto`, this class will automatically download data for you
             under :obj:`$CHAINER_DATASET_ROOT/pfnet/chainercv/cub`.
+        split ({'train', 'test', 'traintest'}): Select a split of the dataset.
+            The default value is :obj:`traintest`.
         return_bbox (bool): If :obj:`True`, this returns a bounding box
             around a bird. The default value is :obj:`False`.
         prob_map_dir (string): Path to the root of the probability maps.
@@ -48,16 +50,21 @@ class CUBKeypointDataset(CUBDatasetBase):
 
     """
 
-    def __init__(self, data_dir='auto', return_bbox=False,
+    def __init__(self, data_dir='auto', split='traintest', return_bbox=False,
                  prob_map_dir='auto', return_prob_map=False):
-        super(CUBKeypointDataset, self).__init__(data_dir, prob_map_dir)
+        super(CUBKeypointDataset, self).__init__(data_dir, split, prob_map_dir)
 
         # load point
         parts_loc_file = os.path.join(self.data_dir, 'parts', 'part_locs.txt')
         self._point_dict = collections.defaultdict(list)
         self._visible_dict = collections.defaultdict(list)
-        for image_id, part_id, x, y, visible in self._read_tokens(parts_loc_file):
-            idx = int(image_id) - 1
+        ids = set()
+        for image_id, _, x, y, visible in self._read_tokens(parts_loc_file):
+            if image_id not in self.image_ids:
+                continue
+            if image_id not in ids:
+                ids.add(image_id)
+            idx = len(ids) - 1
 
             # (y, x) order
             point = [float(y), float(x)]
